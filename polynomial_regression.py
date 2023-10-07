@@ -1,7 +1,10 @@
 import pandas as pd
 import glob
+import matplotlib.pyplot as plt
+import numpy as np
 from datetime import datetime
 from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import r2_score 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
@@ -30,7 +33,7 @@ for file in jira_case_files:
     df_csv['Resolved'] = pd.to_datetime(df_csv['Resolved'])
     
     # Calculate the 'Days to resolution' by subtracting 'Created' from 'Resolved'
-    df_csv['Days to resolution'] = (df_csv['Resolved'] - df_csv['Created']).dt.days
+    df_csv['Days to resolution'] = (df_csv['Resolved'] - df_csv['Created']).dt.days.abs()
     
     # Select the desired columns for analysis
     selected_fields = feature_columns + ['Days to resolution']
@@ -41,9 +44,6 @@ for file in jira_case_files:
 
 # Concatenate all DataFrames into a single DataFrame
 df = pd.concat(df_jira_list)
-
-# Get average day to resolution
-average_day_to_resolution = df['Days to resolution'].mean()
 
 # Initialize a label encoder for encoding categorical features
 label_encoder = LabelEncoder()
@@ -87,7 +87,25 @@ y_pred_train = lin.predict(X_poly_train)
 # Calculate the mean absolute error on the training data
 mae_train = mean_absolute_error(y_train, y_pred_train)
 
-# Print the average and mean absolutes errors
-print("Average days to resolution", average_day_to_resolution)
+# Calculate r2 
+r2 = r2_score(y_train, y_pred_train)
+
+# Apply a transformation to ensure non-negative predictions (e.g., absolute value)
+y_pred_train = np.abs(y_pred_train)
+
+# Print the mean absolute errors
 print("Mean Absolute Error on Test Data:", mae_test)
 print("Mean Absolute Error on Training Data:", mae_train)
+print("r2 Score:", r2)
+
+# Calculate the absolute difference between actual and predicted values
+absolute_errors = abs(y_train - y_pred_train)
+
+# Create a scatter plot with color coding based on absolute errors
+plt.scatter(y_train, y_pred_train, c=absolute_errors, cmap='viridis', alpha=0.7)
+plt.xlabel("Actual Days to Resolution")
+plt.ylabel("Predicted Days to Resolution")
+plt.colorbar(label="Absolute Error")
+plt.title("Actual vs Predicted Days to Resolution")
+plt.savefig('actual_vs_predicted_days_to_resolution.png')
+plt.close()
