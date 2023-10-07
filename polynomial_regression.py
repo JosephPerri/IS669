@@ -42,6 +42,9 @@ for file in jira_case_files:
 # Concatenate all DataFrames into a single DataFrame
 df = pd.concat(df_jira_list)
 
+# Get average day to resolution
+average_day_to_resolution = df['Days to resolution'].mean()
+
 # Initialize a label encoder for encoding categorical features
 label_encoder = LabelEncoder()
 
@@ -84,6 +87,7 @@ y_pred_train = lin.predict(X_poly_train)
 # Calculate the mean absolute error on the training data
 mae_train = mean_absolute_error(y_train, y_pred_train)
 
-# Print the mean absolute errors
+# Print the average and mean absolutes errors
+print("Average days to resolution", average_day_to_resolution)
 print("Mean Absolute Error on Test Data:", mae_test)
 print("Mean Absolute Error on Training Data:", mae_train)
